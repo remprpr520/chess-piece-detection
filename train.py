@@ -13,7 +13,7 @@ if __name__ == '__main__':
     # 训练模型
     results = model.train(
         data='data.yaml',
-        epochs=20,
+        epochs=1,
         imgsz=640,
         batch=16,
         workers=6,
@@ -31,6 +31,6 @@ if __name__ == '__main__':
         flipud = 0.3,
         scale = 0.8,
         name='yolov11_chess_e20_1',
-        device='cuda:0',
+        device='cpu',
     )
 

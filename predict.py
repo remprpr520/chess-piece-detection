@@ -5,7 +5,7 @@ import matplotlib
 def yolo_image_detection(image_path):
 
     # 加载YOLO模型
-    model = YOLO("runs/detect/yolov11_chess_e20_1/weights/best.pt")
+    model = YOLO("runs/detect/orthers/2/best.pt")
 
     # 读取图像
     image = cv2.imread(image_path)
@@ -28,7 +28,6 @@ def yolo_image_detection(image_path):
     cv2.imshow("YOLO Detection", annotated_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-
 
 # 使用示例
 if __name__ == "__main__":
