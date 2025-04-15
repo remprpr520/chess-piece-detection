@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>国际象棋棋子检测系统 - 数据看板</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/locale/zh-cn.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.0/marked.min.js"></script>
+    <link rel="stylesheet" href="/static/dashboard/css/styles.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-indigo-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">国际象棋棋子检测系统 - 数据看板</h1>
+            <a href="/" class="bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100">
+                返回主页
+            </a>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-6">
+        <!-- 统计卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="card">
+                <h3 class="text-gray-500 text-sm font-medium">总检测次数</h3>
+                <p class="text-3xl font-bold text-gray-900" id="total-detections">--</p>
+                <p class="text-sm text-gray-600 mt-2">包含棋子检测和棋谱生成</p>
+            </div>
+            <div class="card">
+                <h3 class="text-gray-500 text-sm font-medium">今日检测次数</h3>
+                <p class="text-3xl font-bold text-gray-900" id="today-detections">--</p>
+                <p class="text-sm text-gray-600 mt-2">今日完成的检测任务</p>
+            </div>
+            <div class="card">
+                <h3 class="text-gray-500 text-sm font-medium">总问答次数</h3>
+                <p class="text-3xl font-bold text-gray-900" id="total-questions">--</p>
+                <p class="text-sm text-gray-600 mt-2">系统问答交互总数</p>
+            </div>
+            <div class="card">
+                <h3 class="text-gray-500 text-sm font-medium">今日问答次数</h3>
+                <p class="text-3xl font-bold text-gray-900" id="today-questions">--</p>
+                <p class="text-sm text-gray-600 mt-2">今日问答交互数</p>
+            </div>
+        </div>
+
+        <!-- 图表 -->
+        <div class="card mt-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">检测趋势统计</h2>
+            <div class="h-80">
+                <canvas id="detection-chart"></canvas>
+            </div>
+        </div>
+
+        <!-- 选项卡 -->
+        <div class="mt-6">
+            <div class="flex border-b border-gray-300">
+                <button id="tab-detection" class="py-3 px-6 font-medium tab-active">检测历史</button>
+                <button id="tab-qa" class="py-3 px-6 font-medium">问答历史</button>
+            </div>
+
+            <!-- 检测历史 -->
+            <div id="detection-history" class="card">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-4 md:space-y-0">
+                    <h2 class="text-xl font-bold text-gray-800">检测历史记录</h2>
+                    <div class="flex flex-wrap gap-2">
+                        <input type="date" id="detection-start-date" class="border rounded px-2 py-1">
+                        <input type="date" id="detection-end-date" class="border rounded px-2 py-1">
+                        <input type="text" id="detection-session-id" placeholder="会话ID" class="border rounded px-2 py-1">
+                        <button id="detection-search" class="bg-indigo-600 text-white px-4 py-1 rounded">搜索</button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">时间</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">会话ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">详情</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detection-table-body" class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td colspan="4" class="text-center py-4">加载中...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 问答历史 -->
+            <div id="qa-history" class="card hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-4 md:space-y-0">
+                    <h2 class="text-xl font-bold text-gray-800">问答历史记录</h2>
+                    <div class="flex flex-wrap gap-2">
+                        <input type="date" id="qa-start-date" class="border rounded px-2 py-1">
+                        <input type="date" id="qa-end-date" class="border rounded px-2 py-1">
+                        <button id="qa-search" class="bg-indigo-600 text-white px-4 py-1 rounded">搜索</button>
+                    </div>
+                </div>
+                <div id="qa-list" class="space-y-4">
+                    <div class="text-center py-4">加载中...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入脚本文件 -->
+    <script src="/static/dashboard/js/utils.js"></script>
+    <script src="/static/dashboard/js/charts.js"></script>
+    <script src="/static/dashboard/js/detectionHistory.js"></script>
+    <script src="/static/dashboard/js/qaHistory.js"></script>
+    <script src="/static/dashboard/js/dashboard.js"></script>
+</body>
+</html>

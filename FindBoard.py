@@ -425,5 +425,5 @@ def find_board(image_np, corners, original_points):
 
 if __name__ == "__main__":
     points = [(200, 200, 1, 0.3), (100, 200, 12, 0.5), (100, 200, 0, 0.7), (200, 200, 10, 0.8), (200, 200, 11, 0.5),  (200, 200, 8, 0.9), (200, 200, 5, 0.2)]
-    ret = find_board_in_window(image_path ="test/t3.jpg", original_points = points)
+    ret = find_board_in_window(image_path ="test/t2.jpg", original_points = points)
     print(ret)

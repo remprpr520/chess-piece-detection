@@ -18,7 +18,7 @@ def yolo_image_detection(image_path):
         image,
         augment=True,
         show=False,
-        verbose=False,
+        verbose=True,
     )
 
     # 在图像上绘制检测结果
@@ -32,5 +32,5 @@ def yolo_image_detection(image_path):
 
 # 使用示例
 if __name__ == "__main__":
-    image_path = r"test/t3.jpg"  # 图像路径
+    image_path = r"test/t2.jpg"  # 图像路径
     yolo_image_detection(image_path)

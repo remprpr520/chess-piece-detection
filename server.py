@@ -4,6 +4,7 @@ import io
 import re
 import json
 import uvicorn
+import datetime
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
@@ -23,6 +24,7 @@ from uuid import uuid4
 from fastapi.responses import JSONResponse
 from FindBoard import find_board
 from PlotPiecesOnBoard import plot_pieces_on_board
+from typing import Dict, List, Optional, Any
 app = FastAPI(title="国际象棋棋子检测API")
 os.makedirs("temp", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -105,6 +107,209 @@ def find_chinese_font():
 
 # 设置中文字体
 chinese_font = find_chinese_font()
+
+# 定义统计数据管理类
+class DashboardStats:
+    def __init__(self, stats_file="dashboard_stats.json"):
+        self.stats_file = stats_file
+        self.stats = self._load_stats()
+
+    def _load_stats(self):
+        """从文件加载统计数据或创建默认结构"""
+        if os.path.exists(self.stats_file):
+            try:
+                with open(self.stats_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"加载统计文件出错: {str(e)}")
+                return self._create_default_stats()
+        else:
+            return self._create_default_stats()
+
+    def _create_default_stats(self):
+        """创建默认统计数据结构"""
+        return {
+            "total_detections": 0,  # 总检测数
+            "total_notations": 0,  # 总棋谱生成数
+            "total_questions": 0,  # 总问答数
+            "daily_stats": {},  # 每日统计
+            "detection_history": [],  # 检测历史
+            "question_history": []  # 问答历史
+        }
+
+    def _save_stats(self):
+        """保存统计数据到文件"""
+        try:
+            with open(self.stats_file, 'w', encoding='utf-8') as f:
+                json.dump(self.stats, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"保存统计文件出错: {str(e)}")
+
+    def get_current_date(self):
+        """获取当前日期字符串，格式为YYYY-MM-DD"""
+        return datetime.datetime.now().strftime("%Y-%m-%d")
+
+    def _ensure_daily_stats(self, date=None):
+        """确保指定日期的日统计数据结构存在"""
+        if date is None:
+            date = self.get_current_date()
+
+        if date not in self.stats["daily_stats"]:
+            self.stats["daily_stats"][date] = {
+                "detections": 0,  # 每日检测数
+                "notations": 0,  # 每日棋谱生成数
+                "questions": 0  # 每日问答数
+            }
+
+        return self.stats["daily_stats"][date]
+
+    def record_detection(self, session_id, pieces):
+        """记录一次检测事件"""
+        print(f"开始记录检测事件: session_id={session_id}")
+        date = self.get_current_date()
+        daily_stats = self._ensure_daily_stats(date)
+
+        # 更新计数器
+        self.stats["total_detections"] += 1
+        daily_stats["detections"] += 1
+
+        # 记录到历史
+        detection_record = {
+            "timestamp": datetime.datetime.now().isoformat(),
+            "date": date,
+            "session_id": session_id,
+            "endpoint": "/detect",
+            "pieces_detected": pieces
+        }
+
+        self.stats["detection_history"].append(detection_record)
+
+        # 限制历史记录大小，防止文件过大
+        if len(self.stats["detection_history"]) > 1000:
+            self.stats["detection_history"] = self.stats["detection_history"][-1000:]
+
+        self._save_stats()
+        print(f"检测事件记录完成: session_id={session_id}")
+        return detection_record
+
+    def record_notation(self, session_id, locations):
+        """记录一次棋谱生成事件"""
+        print(f"开始记录棋谱生成事件: session_id={session_id}")
+        date = self.get_current_date()
+        daily_stats = self._ensure_daily_stats(date)
+
+        # 更新计数器
+        self.stats["total_notations"] += 1
+        daily_stats["notations"] += 1
+
+        # 记录到历史
+        notation_record = {
+            "timestamp": datetime.datetime.now().isoformat(),
+            "date": date,
+            "session_id": session_id,
+            "endpoint": "/generate_notation",
+            "locations": locations
+        }
+
+        self.stats["detection_history"].append(notation_record)
+
+        # 限制历史记录大小
+        if len(self.stats["detection_history"]) > 1000:
+            self.stats["detection_history"] = self.stats["detection_history"][-1000:]
+
+        self._save_stats()
+        print(f"棋谱生成事件记录完成: session_id={session_id}")
+        return notation_record
+
+    def record_question(self, question, answer):
+        """记录一次问答"""
+        print(f"开始记录问答事件")
+        date = self.get_current_date()
+        daily_stats = self._ensure_daily_stats(date)
+
+        # 更新计数器
+        self.stats["total_questions"] += 1
+        daily_stats["questions"] += 1
+
+        # 记录到历史
+        qa_record = {
+            "timestamp": datetime.datetime.now().isoformat(),
+            "date": date,
+            "question": question,
+            "answer": answer
+        }
+
+        self.stats["question_history"].append(qa_record)
+
+        # 限制历史记录大小
+        if len(self.stats["question_history"]) > 1000:
+            self.stats["question_history"] = self.stats["question_history"][-1000:]
+
+        self._save_stats()
+        print(f"问答事件记录完成")
+        return qa_record
+
+    def get_summary_stats(self):
+        """获取概要统计数据"""
+        date = self.get_current_date()
+        daily_stats = self._ensure_daily_stats(date)
+
+        return {
+            "total_detections": self.stats["total_detections"],
+            "total_notations": self.stats["total_notations"],
+            "total_questions": self.stats["total_questions"],
+            "today_detections": daily_stats["detections"],
+            "today_notations": daily_stats["notations"],
+            "today_questions": daily_stats["questions"],
+            "today_total": daily_stats["detections"] + daily_stats["notations"],
+            "daily_stats": self.stats["daily_stats"]  # 添加每日统计数据用于图表展示
+        }
+
+    def get_detection_history(self, start_date=None, end_date=None, session_id=None, limit=100):
+        """获取检测历史，支持过滤条件"""
+        history = self.stats["detection_history"]
+
+        # 应用过滤条件
+        if start_date:
+            history = [h for h in history if h["date"] >= start_date]
+        if end_date:
+            history = [h for h in history if h["date"] <= end_date]
+        if session_id:
+            history = [h for h in history if h.get("session_id") == session_id]
+
+        # 按时间戳排序（最新的在前）
+        history = sorted(history, key=lambda x: x["timestamp"], reverse=True)
+
+        # 应用限制
+        return history[:limit]
+
+    def get_question_history(self, start_date=None, end_date=None, limit=100):
+        """获取问答历史，支持过滤条件"""
+        history = self.stats["question_history"]
+
+        # 应用过滤条件
+        if start_date:
+            history = [h for h in history if h["date"] >= start_date]
+        if end_date:
+            history = [h for h in history if h["date"] <= end_date]
+
+        # 按时间戳排序（最新的在前）
+        history = sorted(history, key=lambda x: x["timestamp"], reverse=True)
+
+        # 应用限制
+        return history[:limit]
+
+
+# 创建全局统计实例
+dashboard_stats = DashboardStats()
+
+
+# 定义请求模型
+class DateRangeQuery(BaseModel):
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    session_id: Optional[str] = None
+    limit: Optional[int] = 100
 
 
 def process_image_file(file_contents: bytes) -> np.ndarray:
@@ -285,13 +490,44 @@ class OllamaResponse(BaseModel):
     think_content: str
     answer_content: str
 
-
-
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
-    with open("static/index.html", "r", encoding="utf-8") as f:
+    with open("static/index/index.html", "r", encoding="utf-8") as f:
         html_content = f.read()
     return html_content
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def get_dashboard():
+    try:
+        with open("static/dashboard/dashboard.html", "r", encoding="utf-8") as f:
+            content = f.read()
+            return HTMLResponse(content=content)
+    except FileNotFoundError as e:
+        print(f"找不到仪表盘HTML文件: {str(e)}")
+        return HTMLResponse(content="<h1>Dashboard not found</h1>", status_code=404)
+
+@app.get("/api/stats/summary")
+async def get_summary_stats():
+    return dashboard_stats.get_summary_stats()
+
+@app.post("/api/stats/detection-history")
+async def get_detection_history(query: DateRangeQuery):
+    """返回检测历史"""
+    return dashboard_stats.get_detection_history(
+        start_date=query.start_date,
+        end_date=query.end_date,
+        session_id=query.session_id,
+        limit=query.limit or 100
+    )
+
+@app.post("/api/stats/question-history")
+async def get_question_history(query: DateRangeQuery):
+    """返回问答历史"""
+    return dashboard_stats.get_question_history(
+        start_date=query.start_date,
+        end_date=query.end_date,
+        limit=query.limit or 100
+    )
 
 
 @app.post("/generate_notation")
@@ -299,7 +535,6 @@ async def generate_chess_notation(
         session_id: str = Form(...),
         corners: str = Form(...)
 ):
-
     # 从缓存获取检测结果
     cached_data = detection_cache.get(session_id)
 
@@ -310,15 +545,15 @@ async def generate_chess_notation(
         # 将字符串解析为Python对象
         corners_json = json.loads(corners)
 
-        corner=[]
+        corner = []
         for ci in corners_json:
             x = ci['x']
             y = ci['y']
-            corner.append((x,y))
-        corners_np=np.array(corner)
+            corner.append((x, y))
+        corners_np = np.array(corner)
 
         # 验证数据格式
-        if  len(corners_np) != 4:
+        if len(corners_np) != 4:
             raise ValueError("需要4个角点坐标")
 
         # 获取存储的棋子坐标点和原始图像
@@ -333,17 +568,36 @@ async def generate_chess_notation(
         )
 
         # 生成棋谱逻辑
-        chessboard_with_pieces = plot_pieces_on_board(pieces=board_data,piece_dir="static/pieces")
+        chessboard_with_pieces = plot_pieces_on_board(pieces=board_data, piece_dir="static/pieces")
         rgb_image = cv2.cvtColor(chessboard_with_pieces, cv2.COLOR_BGR2RGB)
 
         # 编码为PNG格式的字节流
         _, encoded_image = cv2.imencode(".png", rgb_image)
         image_bytes = encoded_image.tobytes()
 
-        cv2.imwrite('chessboard_with_pieces.png', chessboard_with_pieces)
+        try:
+            board_log = []
+            for chess in board_data:
+                print('001')
+                class_id = chess[2]
+                position = chess[3]
+                if class_id in piece_chinese_names:
+                    print('002')
+                    board_log.append(f"{position}:{piece_chinese_names[class_id]}")
+
+        except Exception as e:
+            print(f"错: {str(e)}")
+
+        print('003')
+        # 记录棋谱生成事件
+        try:
+            dashboard_stats.record_notation(session_id, board_log)
+            print(f"棋谱生成事件已记录: session_id={session_id}")
+        except Exception as e:
+            print(f"记录棋谱生成统计时出错: {str(e)}")
 
         # 返回图像响应
-        return Response(content=image_bytes,media_type="image/png")
+        return Response(content=image_bytes, media_type="image/png")
 
     except Exception as e:
         print(str(e))
@@ -401,8 +655,27 @@ async def detect_chess_pieces(
             "timestamp": time.time()
         }
 
-        # 返回图片和会话ID
+        # 初始化统计字典
+        chess_log = {name: 0 for name in piece_chinese_names.values()}
 
+        # 统计每个棋子的数量
+        for item in points:
+            class_id = item[2]  # 获取类别ID
+            if class_id in piece_chinese_names:
+                name = piece_chinese_names[class_id]
+                chess_log[name] += 1
+
+        # 过滤掉数量为0的棋子
+        chess_log = {k: v for k, v in chess_log.items() if v > 0}
+        chess_log_str = [f"{name}:{count}" for name, count in chess_log.items()]
+        # 记录检测事件
+        try:
+            dashboard_stats.record_detection(session_id, chess_log_str)
+            print(f"检测事件已记录: session_id={session_id}")
+        except Exception as e:
+            print(f"记录检测统计时出错: {str(e)}")
+
+        # 返回图片和会话ID
         return JSONResponse(
             content={
                 "session_id": session_id,
@@ -433,7 +706,7 @@ async def chat_with_model(request: OllamaRequest):
         # 发送请求到Ollama API
         response = requests.post(OLLAMA_API_URL, json=data)
 
-        res_text=response.json().get("response")
+        res_text = response.json().get("response")
         pattern = r'<think>(.*?)</think>(.*)'
         match = re.search(pattern, res_text, re.DOTALL)  # re.DOTALL 确保匹配换行符
 
@@ -445,7 +718,6 @@ async def chat_with_model(request: OllamaRequest):
             think_content = "没有提供思考过程"
             answer_content = res_text
 
-
         # 检查响应状态
         if response.status_code != 200:
             print(f"Error from Ollama API: {response.status_code}, {response.text}")
@@ -453,6 +725,13 @@ async def chat_with_model(request: OllamaRequest):
                 status_code=response.status_code,
                 detail=f"Ollama API返回错误: {response.text}"
             )
+
+        # 记录问答事件
+        try:
+            dashboard_stats.record_question(request.prompt, answer_content)
+            print(f"问答事件已记录")
+        except Exception as e:
+            print(f"记录问答统计时出错: {str(e)}")
 
         # 解析响应
         result = response.json()
@@ -471,15 +750,17 @@ async def chat_with_model(request: OllamaRequest):
             detail=f"处理请求时出错: {str(e)}"
         )
 
-    # 定时清理过期缓存
+# 定时清理过期缓存
 def clear_expired_cache():
     now = time.time()
     expired_keys = [k for k, v in detection_cache.items() if now - v["timestamp"] > 3600]
     for k in expired_keys:
         del detection_cache[k]
-    # 每半时执行一次清理
+    # 每半小时执行一次清理
     Timer(1800, clear_expired_cache).start()
 
 if __name__ == "__main__":
+    # 启动缓存清理
     clear_expired_cache()
+
     uvicorn.run("server:app", host="127.0.0.1", port=8000, reload=True)

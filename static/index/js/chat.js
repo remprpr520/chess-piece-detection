@@ -189,7 +189,7 @@ function addAIMessage(answermessage, thinkmessage) {
 
   messageElement.innerHTML = `
     <div class="ai-avatar">
-      <img src="/static/ai-avatar.png" alt="AI" onerror="this.src='/static/placeholder-avatar.png'">
+      <img src="/ai-avatar.png" alt="AI" onerror="this.src='/static/placeholder-avatar.png'">
     </div>
     <div>
         <div class="think-content">
@@ -219,7 +219,7 @@ function addThinkingMessage() {
 
   messageElement.innerHTML = `
     <div class="ai-avatar">
-      <img src="/static/ai-avatar.png" alt="AI" onerror="this.src='/static/placeholder-avatar.png'">
+      <img src="/ai-avatar.png" alt="AI" onerror="this.src='/static/placeholder-avatar.png'">
     </div>
     <div class="message-content">
       <div class="message-text">

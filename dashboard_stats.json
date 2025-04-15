@@ -1,0 +1,64 @@
+{
+  "total_detections": 1,
+  "total_notations": 1,
+  "total_questions": 1,
+  "daily_stats": {
+    "2025-04-15": {
+      "detections": 1,
+      "notations": 1,
+      "questions": 1
+    }
+  },
+  "detection_history": [
+    {
+      "timestamp": "2025-04-15T16:23:23.357313",
+      "date": "2025-04-15",
+      "session_id": "f4ed82f6-1970-4ace-a892-45e900b30d73",
+      "endpoint": "/detect",
+      "pieces_detected": [
+        "黑象(Black Bishop):1",
+        "黑王(Black King):1",
+        "黑兵(Black Pawn):5",
+        "黑车(Black Rook):2",
+        "白王(White King):1",
+        "白马(White Knight):1",
+        "白兵(White Pawn):5",
+        "白车(White Rook):3"
+      ]
+    },
+    {
+      "timestamp": "2025-04-15T16:23:31.192454",
+      "date": "2025-04-15",
+      "session_id": "f4ed82f6-1970-4ace-a892-45e900b30d73",
+      "endpoint": "/generate_notation",
+      "locations": [
+        "d1:白车(White Rook)",
+        "d6:黑兵(Black Pawn)",
+        "a2:白兵(White Pawn)",
+        "h7:黑兵(Black Pawn)",
+        "f1:白王(White King)",
+        "h2:白兵(White Pawn)",
+        "c2:黑车(Black Rook)",
+        "f3:白兵(White Pawn)",
+        "g7:黑兵(Black Pawn)",
+        "g2:白兵(White Pawn)",
+        "b3:白兵(White Pawn)",
+        "a6:黑兵(Black Pawn)",
+        "c6:黑车(Black Rook)",
+        "a5:白车(White Rook)",
+        "e5:黑兵(Black Pawn)",
+        "e4:白马(White Knight)",
+        "e6:黑王(Black King)",
+        "e7:黑象(Black Bishop)"
+      ]
+    }
+  ],
+  "question_history": [
+    {
+      "timestamp": "2025-04-15T16:27:28.176268",
+      "date": "2025-04-15",
+      "question": "你是一个国际象棋专家助手。请回答以下关于国际象棋的问题：国际象棋的基本规则是什么？",
+      "answer": "国际象棋的基本规则如下：\n\n1. **棋盘**：国际象棋使用8x8的棋盘，共64格，交替分布黑白格。\n\n2. **棋子**：\n   - 每方初始拥有16个棋子：1王、1车、2马、2象、2马、2车、1皇后和1兵。\n   - 王位于中心格，车位于相邻格，兵位于靠近己方底线的行（白方为第6行，黑方为第1行）。\n\n3. **走法**：\n   - 王可横竖斜走一格，但不可跳跃。\n   - 兵开始时只能向前直行，但可斜进升变后，也可横向移动。\n   - 马走日字（两格加一格或一格加两格）。\n   - 车、象和皇后按直线和曲线移动任意格数。\n   - 任何棋子均可跳跃过对方棋子，但需先用脚端跳过并着陆。\n\n4. **升变**：\n   - 当兵到达对方底线时可选择升变王（除后兵外）或车、马、象。\n   - 升变后棋子消失，且由升变方获得额外行动。\n\n5. **胜利条件**：\n   - 捕获对方王，迫使它无合法着法。\n   - 王与对方面前被包围且无逃路时可引认和棋。\n   - 规定的60步超时判负，但胜方仍可申请和棋。\n\n6. **术语**：\n   - 棋子位置用字母（a-h）加数字（1-8）表示。\n   - 行（Rank）指水平线，列（ files ）指垂直线。\n   - 前进（Forward）指朝向王的移动方向。\n\n7. **国际象棋符号**：\n   - 起点：我方兵前为+1，对方兵前为-1。\n   - 棋子升变标记：#表示自动升变，!表示弃兵升变。\n   - 和棋符号：·表示和棋提议。\n\n通过这些规则，国际象棋构成了一个严谨且充满策略的对抗性游戏。"
+    }
+  ]
+}
