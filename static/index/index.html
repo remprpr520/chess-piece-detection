@@ -254,17 +254,20 @@
         </div>
     </div>
 
-    <!-- Markdown转HTML函数 -->
-    <script>
-        function convertMarkdownToHTML(markdown) {
-            if (!markdown) return '';
-            return marked.parse(markdown);
-        }
-    </script>
-
-    <!-- 引入JavaScript文件 -->
-    <script src="/static/index/js/main.js"></script>
+    <!-- 引入JavaScript模块文件 -->
+    <!-- 工具模块 -->
+    <script src="/static/index/js/utils.js"></script>
+    <!-- API交互模块 -->
+    <script src="/static/index/js/api.js"></script>
+    <!-- UI交互模块 -->
+    <script src="/static/index/js/ui.js"></script>
+    <!-- 检测功能模块 -->
+    <script src="/static/index/js/detection.js"></script>
+    <!-- 聊天功能模块 -->
     <script src="/static/index/js/chat.js"></script>
-    <script src="/static/index/js/modal.js"></script>
+    <!-- 语音功能模块 -->
+    <script src="/static/index/js/speech.js"></script>
+    <!-- 主入口模块 -->
+    <script src="/static/index/js/index.js"></script>
 </body>
 </html>
