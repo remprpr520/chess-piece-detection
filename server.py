@@ -1,5 +1,7 @@
+import base64
 import os
 import io
+import re
 import json
 import uvicorn
 import numpy as np
@@ -7,18 +9,33 @@ import cv2
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from collections import defaultdict
-from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Response
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Response, Query
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
 from ultralytics import YOLO
 import matplotlib.font_manager as fm
-
+import requests
+from pydantic import BaseModel
+import time
+from threading import Timer
+from uuid import uuid4
+from fastapi.responses import JSONResponse
+from FindBoard import find_board
+from PlotPiecesOnBoard import plot_pieces_on_board
 app = FastAPI(title="国际象棋棋子检测API")
 os.makedirs("temp", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# 缓存区域
+detection_cache = {}
+
 # 模型路径
-model = YOLO('runs/detect/orthers/2/best.pt')
+model = YOLO('runs/detect/orthers/1/best.pt')
+
+# Ollama API配置
+OLLAMA_API_URL = "http://localhost:11434/api/generate"
+FIXED_MODEL_NAME  = "hf.co/jnszstm/deepseek_r1_8b_chess_cn_gguf:latest"
 
 # 棋子类别映射
 piece_class_mapping = {
@@ -67,6 +84,7 @@ color_map = {
     10: '#80FF00',  # white-queen (黄绿色)
     11: '#0080FF',  # white-rook (天蓝色)
 }
+
 
 
 # 查找系统中可用的中文字体
@@ -139,12 +157,16 @@ def custom_plot_detection(image_np: np.ndarray, model, classes_to_show=None, con
     results = model(image_np)
     boxes = results[0].boxes
 
+    chess_points=[]
     # 收集所有检测框并按类别存储
     for box in boxes:
         x1, y1, x2, y2 = box.xyxy[0].tolist()
+        x0=(x1+x2)/2
+        y0=(y1+3*y2)/4
         conf = box.conf.item()
         cls_id = int(box.cls.item())
 
+        chess_points.append((x0, y0, cls_id, conf))
         if conf < conf_threshold:
             continue
 
@@ -196,10 +218,6 @@ def custom_plot_detection(image_np: np.ndarray, model, classes_to_show=None, con
             # 添加矩形到图像
             ax_main.add_patch(rect)
 
-            # 添加标签
-            label = box['label']
-            ax_main.text(x1, y1 - 5, label, fontsize=9, color='white',
-                         bbox=dict(facecolor=color, alpha=0.7, edgecolor='none', pad=1))
 
     # 设置图例区域
     ax_legend.set_title("检测棋子类别说明", fontsize=14)
@@ -229,6 +247,7 @@ def custom_plot_detection(image_np: np.ndarray, model, classes_to_show=None, con
                 # 添加类别文本
                 ax_legend.text(0.35, current_y, name,
                                va='center', ha='left', fontsize=12)
+
     else:
         # 如果没有检测到任何棋子，显示提示信息
         ax_legend.text(0.5, 0.5, "未检测到任何选中的棋子类别",
@@ -254,7 +273,18 @@ def custom_plot_detection(image_np: np.ndarray, model, classes_to_show=None, con
 
     # 返回字节数据
     img_buf.seek(0)
-    return img_buf.getvalue()
+    return img_buf.getvalue(), chess_points
+
+# 定义Ollama请求和响应的模型
+class OllamaRequest(BaseModel):
+    prompt: str
+    model: str = FIXED_MODEL_NAME
+    stream: bool = False
+
+class OllamaResponse(BaseModel):
+    think_content: str
+    answer_content: str
+
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -263,6 +293,61 @@ async def read_root():
         html_content = f.read()
     return html_content
 
+
+@app.post("/generate_notation")
+async def generate_chess_notation(
+        session_id: str = Form(...),
+        corners: str = Form(...)
+):
+
+    # 从缓存获取检测结果
+    cached_data = detection_cache.get(session_id)
+
+    if not cached_data:
+        raise HTTPException(status_code=404, detail="无效的会话ID或检测结果已过期")
+
+    try:
+        # 将字符串解析为Python对象
+        corners_json = json.loads(corners)
+
+        corner=[]
+        for ci in corners_json:
+            x = ci['x']
+            y = ci['y']
+            corner.append((x,y))
+        corners_np=np.array(corner)
+
+        # 验证数据格式
+        if  len(corners_np) != 4:
+            raise ValueError("需要4个角点坐标")
+
+        # 获取存储的棋子坐标点和原始图像
+        chess_points = cached_data["points"]
+        image_np = cached_data["image"]
+
+        # 调用find_board函数
+        board_data = find_board(
+            image_np=image_np,
+            corners=corners_np,  # 使用转换后的NumPy数组
+            original_points=chess_points
+        )
+
+        # 生成棋谱逻辑
+        chessboard_with_pieces = plot_pieces_on_board(pieces=board_data,piece_dir="static/pieces")
+        rgb_image = cv2.cvtColor(chessboard_with_pieces, cv2.COLOR_BGR2RGB)
+
+        # 编码为PNG格式的字节流
+        _, encoded_image = cv2.imencode(".png", rgb_image)
+        image_bytes = encoded_image.tobytes()
+
+        cv2.imwrite('chessboard_with_pieces.png', chessboard_with_pieces)
+
+        # 返回图像响应
+        return Response(content=image_bytes,media_type="image/png")
+
+    except Exception as e:
+        print(str(e))
+        raise HTTPException(status_code=400, detail=f"无法处理上传的图像: {str(e)}")
 
 @app.post("/detect")
 async def detect_chess_pieces(
@@ -298,19 +383,103 @@ async def detect_chess_pieces(
 
     try:
         # 使用自定义函数进行检测
-        result_image_bytes = custom_plot_detection(
+        result_image_bytes, points = custom_plot_detection(
             image_np=image_np,
             model=model,
             classes_to_show=selected_classes,
             conf_threshold=0.4
         )
 
-        # 返回检测结果图片
-        return Response(content=result_image_bytes, media_type="image/png")
+        # 生成唯一会话ID
+        session_id = str(uuid4())
+
+        image_bgr = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
+        # 将检测结果存入缓存（1小时有效期）
+        detection_cache[session_id] = {
+            "points": points,
+            "image": image_bgr,
+            "timestamp": time.time()
+        }
+
+        # 返回图片和会话ID
+
+        return JSONResponse(
+            content={
+                "session_id": session_id,
+                "image": base64.b64encode(result_image_bytes).decode('utf-8')
+            },
+            headers={"Content-Type": "application/json"}
+        )
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"检测过程中出错: {str(e)}")
 
 
+@app.post("/chat", response_model=OllamaResponse)
+async def chat_with_model(request: OllamaRequest):
+    try:
+        # 使用固定模型名称，不管请求中的模型是什么
+        actual_model = FIXED_MODEL_NAME
+
+        # 准备请求数据
+        data = {
+            "model": actual_model,
+            "prompt": request.prompt,
+            "stream": False
+        }
+
+        print(f"Sending request to Ollama API: {data}")
+
+        # 发送请求到Ollama API
+        response = requests.post(OLLAMA_API_URL, json=data)
+
+        res_text=response.json().get("response")
+        pattern = r'<think>(.*?)</think>(.*)'
+        match = re.search(pattern, res_text, re.DOTALL)  # re.DOTALL 确保匹配换行符
+
+        if match:
+            think_content = match.group(1).strip()  # <think> 内的内容
+            answer_content = match.group(2).strip()  # 剩余内容
+        else:
+            # 如果没有匹配到思考标签，则整个内容作为回答
+            think_content = "没有提供思考过程"
+            answer_content = res_text
+
+
+        # 检查响应状态
+        if response.status_code != 200:
+            print(f"Error from Ollama API: {response.status_code}, {response.text}")
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Ollama API返回错误: {response.text}"
+            )
+
+        # 解析响应
+        result = response.json()
+        print(f"Received response from Ollama: {result}")
+        return {"think_content": think_content, "answer_content": answer_content}
+    except requests.RequestException as e:
+        print(f"Request exception: {str(e)}")
+        raise HTTPException(
+            status_code=503,
+            detail=f"无法连接到Ollama服务: {str(e)}"
+        )
+    except Exception as e:
+        print(f"General exception: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"处理请求时出错: {str(e)}"
+        )
+
+    # 定时清理过期缓存
+def clear_expired_cache():
+    now = time.time()
+    expired_keys = [k for k, v in detection_cache.items() if now - v["timestamp"] > 3600]
+    for k in expired_keys:
+        del detection_cache[k]
+    # 每半时执行一次清理
+    Timer(1800, clear_expired_cache).start()
+
 if __name__ == "__main__":
-    uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True)
+    clear_expired_cache()
+    uvicorn.run("server:app", host="127.0.0.1", port=8000, reload=True)

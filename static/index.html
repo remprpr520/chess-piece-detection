@@ -3,325 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>国际象棋棋子检测系统</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        .upload-section {
-            text-align: center;
-            margin: 20px 0;
-            padding: 20px;
-            border: 2px dashed #ccc;
-            border-radius: 8px;
-        }
-        #fileInput {
-            display: none;
-        }
-        .btn {
-            padding: 10px 20px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 15px;
-        }
-        .btn:hover {
-            background-color: #2980b9;
-        }
-        .result-section {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .result-image {
-            max-width: 100%;
-            height: auto;
-            margin-top: 20px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .loading {
-            text-align: center;
-            margin: 20px 0;
-        }
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .hidden {
-            display: none;
-        }
-        .piece-selection {
-            margin: 20px auto;
-            max-width: 600px;
-            text-align: left;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-        }
-        .piece-selection h3 {
-            text-align: center;
-            margin-bottom: 15px;
-            color: #333;
-        }
-        .piece-group {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        .piece-option {
-            flex-basis: 48%;
-            margin-bottom: 10px;
-        }
-        .select-all-container {
-            margin: 10px 0;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-    </style>
+    <title>国际象棋智能检测系统</title>
+    <!-- 引入外部CSS -->
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Markdown解析库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.0/marked.min.js"></script>
 </head>
+
 <body>
     <div class="container">
-        <h1>国际象棋棋子检测系统</h1>
-
-        <div class="piece-selection">
-            <h3>选择要检测的棋子类别</h3>
-
-            <div class="select-all-container">
-                <label>
-                    <input type="checkbox" id="selectAll"> 全选/取消全选
-                </label>
-            </div>
-
-            <div class="piece-group">
-                <div class="piece-option">
-                    <label>
-                        <input type="checkbox" class="piece-checkbox" value="white_king"> 白王
-                    </label>
-                </div>
-                <div class="piece-option">
-                    <label>
-                        <input type="checkbox" class="piece-checkbox" value="black_king"> 黑王
-                    </label>
-                </div>
-                <div class="piece-option">
-                    <label>
-                        <input type="checkbox" class="piece-checkbox" value="white_queen"> 白后
-                    </label>
-                </div>
-                <div class="piece-option">
-                    <label>
-                        <input type="checkbox" class="piece-checkbox" value="black_queen"> 黑后
-                    </label>
-                </div>
-                <div class="piece-option">
-                    <label>
-                        <input type="checkbox" class="piece-checkbox" value="white_bishop"> 白象
-                    </label>
-                </div>
-                <div class="piece-option">
-                    <label>
-                        <input type="checkbox" class="piece-checkbox" value="black_bishop"> 黑象
-                    </label>
-                </div>
-                <div class="piece-option">
-                    <label>
-                        <input type="checkbox" class="piece-checkbox" value="white_knight"> 白马
-                    </label>
-                </div>
-                <div class="piece-option">
-                    <label>
-                        <input type="checkbox" class="piece-checkbox" value="black_knight"> 黑马
-                    </label>
-                </div>
-                <div class="piece-option">
-                    <label>
-                        <input type="checkbox" class="piece-checkbox" value="white_rook"> 白车
-                    </label>
-                </div>
-                <div class="piece-option">
-                    <label>
-                        <input type="checkbox" class="piece-checkbox" value="black_rook"> 黑车
-                    </label>
-                </div>
-                <div class="piece-option">
-                    <label>
-                        <input type="checkbox" class="piece-checkbox" value="white_pawn"> 白兵
-                    </label>
-                </div>
-                <div class="piece-option">
-                    <label>
-                        <input type="checkbox" class="piece-checkbox" value="black_pawn"> 黑兵
-                    </label>
+        <h1>国际象棋智能检测系统</h1>
+        <!-- 导航按钮 -->
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-12 text-center mb-4">
+                    <h1 class="display-5">国际象棋分析系统</h1>
+                    <div class="btn-group-lg" role="group" aria-label="功能切换">
+                        <button type="button" class="btn btn-primary active" id="detection-btn">棋子识别</button>
+                        <button type="button" class="btn btn-outline-primary" id="qa-btn">象棋知识问答</button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="upload-section">
-            <p>上传国际象棋的图片进行棋子检测</p>
-            <input type="file" id="fileInput" accept="image/*">
-            <button id="uploadBtn" class="btn">选择图片</button>
-        </div>
+            <!-- 棋子识别区域 -->
+            <div id="detection-section">
+                <!-- 棋子识别功能内容 -->
+                <div class="piece-selection">
+                    <div class="select-all-container">
+                        <div>
+                            <span id="selectionCount">已选择 0 个类别</span>
+                        </div>
+                        <button class="btn" onclick="toggleSelectAll()">
+                            <i class="fas fa-check-double"></i>
+                            <span>全选/取消</span>
+                        </button>
+                    </div>
 
-        <div id="loadingSection" class="loading hidden">
-            <div class="spinner"></div>
-            <p>正在处理中，请稍候...</p>
-        </div>
+                    <div class="piece-group">
+                        <!-- 白色棋子 -->
+                        <div class="piece-option">
+                            <label>
+                                <input type="checkbox" class="piece-checkbox" value="white_king">
+                                <i class="fas fa-chess-king white-piece"></i>
+                                白王
+                            </label>
+                        </div>
+                        <div class="piece-option">
+                            <label>
+                                <input type="checkbox" class="piece-checkbox" value="white_queen">
+                                <i class="fas fa-chess-queen white-piece"></i>
+                                白后
+                            </label>
+                        </div>
+                        <div class="piece-option">
+                            <label>
+                                <input type="checkbox" class="piece-checkbox" value="white_bishop">
+                                <i class="fas fa-chess-bishop white-piece"></i>
+                                白象
+                            </label>
+                        </div>
+                        <div class="piece-option">
+                            <label>
+                                <input type="checkbox" class="piece-checkbox" value="white_knight">
+                                <i class="fas fa-chess-knight white-piece"></i>
+                                白马
+                            </label>
+                        </div>
+                        <div class="piece-option">
+                            <label>
+                                <input type="checkbox" class="piece-checkbox" value="white_rook">
+                                <i class="fas fa-chess-rook white-piece"></i>
+                                白车
+                            </label>
+                        </div>
+                        <div class="piece-option">
+                            <label>
+                                <input type="checkbox" class="piece-checkbox" value="white_pawn">
+                                <i class="fas fa-chess-pawn white-piece"></i>
+                                白兵
+                            </label>
+                        </div>
 
-        <div id="resultSection" class="result-section hidden">
-            <h2>检测结果</h2>
-            <img id="resultImage" class="result-image" src="" alt="检测结果">
+                        <!-- 黑色棋子 -->
+                        <div class="piece-option">
+                            <label>
+                                <input type="checkbox" class="piece-checkbox" value="black_king">
+                                <i class="fas fa-chess-king black-piece"></i>
+                                黑王
+                            </label>
+                        </div>
+                        <div class="piece-option">
+                            <label>
+                                <input type="checkbox" class="piece-checkbox" value="black_queen">
+                                <i class="fas fa-chess-queen black-piece"></i>
+                                黑后
+                            </label>
+                        </div>
+                        <div class="piece-option">
+                            <label>
+                                <input type="checkbox" class="piece-checkbox" value="black_bishop">
+                                <i class="fas fa-chess-bishop black-piece"></i>
+                                黑象
+                            </label>
+                        </div>
+                        <div class="piece-option">
+                            <label>
+                                <input type="checkbox" class="piece-checkbox" value="black_knight">
+                                <i class="fas fa-chess-knight black-piece"></i>
+                                黑马
+                            </label>
+                        </div>
+                        <div class="piece-option">
+                            <label>
+                                <input type="checkbox" class="piece-checkbox" value="black_rook">
+                                <i class="fas fa-chess-rook black-piece"></i>
+                                黑车
+                            </label>
+                        </div>
+                        <div class="piece-option">
+                            <label>
+                                <input type="checkbox" class="piece-checkbox" value="black_pawn">
+                                <i class="fas fa-chess-pawn black-piece"></i>
+                                黑兵
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="upload-section">
+                    <p>拖动图片至此或点击上传</p>
+                    <button id="uploadBtn" class="btn">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        选择图片
+                    </button>
+                    <input type="file" id="fileInput" accept="image/*" hidden>
+                </div>
+
+                <div id="loadingSection" class="hidden">
+                    <div class="spinner"></div>
+                    <p>正在分析图片...</p>
+                </div>
+
+                <div id="resultSection" class="result-section hidden" data-session-id="">
+                    <h2><i class="fas fa-search"></i> 检测结果</h2>
+
+                    <div class="image-container">
+                        <canvas id="resultCanvas" class="result-canvas"></canvas>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button id="generateNotationBtn" class="btn">
+                            <i class="fas fa-chess-board"></i>
+                            生成棋谱
+                        </button>
+                    </div>
+                    <div id="cornerSelectionModal" class="modal">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h2>请选择棋盘四个角点</h2>
+                          <span class="close-button">&times;</span>
+                        </div>
+                        <div class="modal-body">
+                          <div class="selection-instructions">
+                            <p>请依次点击棋盘的<strong>四个角点</strong>（顺序：左上、右上、右下、左下）</p>
+                            <p>已选择: <span id="modalCornerCount">0</span>/4</p>
+                            <div class="selection-actions">
+                              <button id="modalResetBtn" class="btn">
+                                <i class="fas fa-redo"></i> 重置角点
+                              </button>
+                              <button id="modalSubmitBtn" class="btn btn-primary" disabled>
+                                <i class="fas fa-check"></i> 提交角点
+                              </button>
+                            </div>
+                          </div>
+                          <div class="image-selection-container">
+                            <img id="selectionImage" src="" alt="棋盘图片" />
+                            <!-- 这里会动态添加标记点 -->
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="notationResult" class="notation-result hidden">
+                        <h3><i class="fas fa-scroll"></i> 生成的棋谱</h3>
+                        <div class="notation-display">
+                            <img id = "resultImage" class="result-image" src="" alt="棋谱">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+
+            <!-- 问答部分 -->
+            <div id="qa-section" style="display: none;">
+                <div class="row justify-content-center">
+                    <div class="col-md-10">
+                        <div class="card chat-card">
+                            <div class="card-header">
+                                <h3>国际象棋知识问答 (Ollama)</h3>
+                            </div>
+
+                            <div class="card-body p-0">
+                                <!-- 聊天历史显示区域 -->
+                                <div id="chat-history" class="p-3 chat-container">
+                                    <div class="welcome-message text-center">
+                                        <div class="ai-avatar">
+                                            <img src="/static/ai-avatar.png" alt="AI" onerror="this.src='/static/placeholder-avatar.png'">
+                                        </div>
+                                        <p>欢迎使用象棋知识问答助手！请输入您的问题。</p>
+                                    </div>
+                                </div>
+
+                                <!-- 问题输入区 -->
+                                <div class="chat-input-area p-3 border-top">
+                                    <div class="input-group">
+                                        <input type="text" id="question-input" class="form-control" placeholder="输入您的象棋问题...">
+                                        <button class="btn btn-mic" type="button" id="mic-button">
+                                            <i class="fas fa-microphone mic-icon"></i>
+                                        </button>
+                                        <button class="btn btn-input" type="button" id="send-question">
+                                            <i class="fas fa-paper-plane"></i> 发送
+                                        </button>
+                                    </div>
+                                    <div id="recognition-status" class="recognition-status hidden">
+                                        <div class="pulse"></div>
+                                        <span>正在聆听...</span>
+                                    </div>
+
+                                    <!-- 提示和建议 -->
+                                    <div class="mt-3">
+                                        <p class="text-muted small">提示：您可以询问关于国际象棋规则、著名棋手、开局策略等问题。</p>
+                                        <div class="quick-questions">
+                                            <button class="btn btn-sm btn-outline-secondary quick-question">什么是车轮战术？</button>
+                                            <button class="btn btn-sm btn-outline-secondary quick-question">如何识别国际象棋中的白骑士？</button>
+                                            <button class="btn btn-sm btn-outline-secondary quick-question">国际象棋的基本规则是什么？</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- Markdown转HTML函数 -->
     <script>
-        const fileInput = document.getElementById('fileInput');
-        const uploadBtn = document.getElementById('uploadBtn');
-        const loadingSection = document.getElementById('loadingSection');
-        const resultSection = document.getElementById('resultSection');
-        const resultImage = document.getElementById('resultImage');
-        const selectAllCheckbox = document.getElementById('selectAll');
-        const pieceCheckboxes = document.querySelectorAll('.piece-checkbox');
-
-        // 全选/取消全选功能
-        selectAllCheckbox.addEventListener('change', () => {
-            const isChecked = selectAllCheckbox.checked;
-            pieceCheckboxes.forEach(checkbox => {
-                checkbox.checked = isChecked;
-            });
-        });
-
-        // 当个别复选框变化时，检查"全选"复选框状态
-        pieceCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', updateSelectAllCheckbox);
-        });
-
-        function updateSelectAllCheckbox() {
-            const allChecked = Array.from(pieceCheckboxes).every(cb => cb.checked);
-            const noneChecked = Array.from(pieceCheckboxes).every(cb => !cb.checked);
-
-            if (allChecked) {
-                selectAllCheckbox.checked = true;
-                selectAllCheckbox.indeterminate = false;
-            } else if (noneChecked) {
-                selectAllCheckbox.checked = false;
-                selectAllCheckbox.indeterminate = false;
-            } else {
-                selectAllCheckbox.indeterminate = true;
-            }
+        function convertMarkdownToHTML(markdown) {
+            if (!markdown) return '';
+            return marked.parse(markdown);
         }
-
-        // 获取选中的棋子类别
-        function getSelectedPieces() {
-            const selectedPieces = [];
-            pieceCheckboxes.forEach(checkbox => {
-                if (checkbox.checked) {
-                    selectedPieces.push(checkbox.value);
-                }
-            });
-            return selectedPieces;
-        }
-
-        // 上传按钮点击事件
-        uploadBtn.addEventListener('click', () => {
-            fileInput.click();
-        });
-
-        // 文件选择事件
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                const file = e.target.files[0];
-
-
-                // 检查文件类型
-                if (!file.type.match('image.*')) {
-                    alert('请上传图片文件');
-                    return;
-                }
-
-                // 获取选中的棋子类别
-                const selectedPieces = getSelectedPieces();
-
-                // 如果没有选择任何棋子，提示用户
-                if (selectedPieces.length === 0) {
-                    alert('请至少选择一种棋子类别进行检测');
-                    return;
-                }
-
-                // 显示加载状态
-                loadingSection.classList.remove('hidden');
-                resultSection.classList.add('hidden');
-
-                // 创建FormData对象
-                const formData = new FormData();
-
-                formData.append('file', file);
-                formData.append('pieces', JSON.stringify(selectedPieces));
-
-                // 发送请求到FastAPI后端
-                fetch('/detect', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(err => {
-                            throw new Error(err.detail || '网络响应错误');
-                        });
-                    }
-                    return response.blob();
-                })
-                .then(blob => {
-                    // 隐藏加载状态
-                    loadingSection.classList.add('hidden');
-
-                    // 显示结果图片
-                    const imageUrl = URL.createObjectURL(blob);
-                    resultImage.src = imageUrl;
-                    resultSection.classList.remove('hidden');
-                })
-                .catch(error => {
-                    // 隐藏加载状态
-                    loadingSection.classList.add('hidden');
-                    alert('检测过程中出错: ' + error.message);
-                })
-                .finally(() => {
-                    fileInput.value = ''; // 清空文件输入
-                });
-            }
-        });
-
-        // 初始化全选复选框状态
-        updateSelectAllCheckbox();
     </script>
+
+    <!-- 引入JavaScript文件 -->
+    <script src="/static/main.js"></script>
+    <script src="/static/chat.js"></script>
 </body>
 </html>
