@@ -1,6 +1,7 @@
 torch>=2.6.0
-ultralytics>=8.3.98
+ultralytics>=8.3.99
 uvicorn>=0.34.0
 numpy>=2.1.1
 fastapi>=0.115.12
 pydantic>=2.11.1
+python-multipart>=0.0.20
