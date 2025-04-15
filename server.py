@@ -578,17 +578,13 @@ async def generate_chess_notation(
         try:
             board_log = []
             for chess in board_data:
-                print('001')
                 class_id = chess[2]
                 position = chess[3]
                 if class_id in piece_chinese_names:
-                    print('002')
                     board_log.append(f"{position}:{piece_chinese_names[class_id]}")
 
         except Exception as e:
             print(f"错: {str(e)}")
-
-        print('003')
         # 记录棋谱生成事件
         try:
             dashboard_stats.record_notation(session_id, board_log)
