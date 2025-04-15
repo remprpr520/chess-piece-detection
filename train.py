@@ -31,6 +31,6 @@ if __name__ == '__main__':
         flipud = 0.3,
         scale = 0.8,
         name='yolov11_chess_e20_1',
-        device='cpu', #device='cuda:0'
+        device='cuda:0',
     )
 
