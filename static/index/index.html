@@ -14,6 +14,7 @@
 <body>
     <div class="container">
         <h1>国际象棋智能检测系统</h1>
+
         <!-- 导航按钮 -->
         <div class="container mt-4">
             <div class="row">
@@ -22,6 +23,9 @@
                     <div class="btn-group-lg" role="group" aria-label="功能切换">
                         <button type="button" class="btn btn-primary active" id="detection-btn">棋子识别</button>
                         <button type="button" class="btn btn-outline-primary" id="qa-btn">象棋知识问答</button>
+                        <a href="/static/dashboard/dashboard.html" class="btn btn-outline-primary">
+                            <i class="fas fa-history"></i> 历史记录
+                        </a>
                     </div>
                 </div>
             </div>
@@ -261,5 +265,6 @@
     <!-- 引入JavaScript文件 -->
     <script src="/static/index/js/main.js"></script>
     <script src="/static/index/js/chat.js"></script>
+    <script src="/static/index/js/modal.js"></script>
 </body>
 </html>

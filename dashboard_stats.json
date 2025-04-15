@@ -1,11 +1,11 @@
 {
-  "total_detections": 1,
-  "total_notations": 1,
+  "total_detections": 2,
+  "total_notations": 2,
   "total_questions": 1,
   "daily_stats": {
     "2025-04-15": {
-      "detections": 1,
-      "notations": 1,
+      "detections": 2,
+      "notations": 2,
       "questions": 1
     }
   },
@@ -50,6 +50,67 @@
         "e4:白马(White Knight)",
         "e6:黑王(Black King)",
         "e7:黑象(Black Bishop)"
+      ]
+    },
+    {
+      "timestamp": "2025-04-15T21:47:11.623710",
+      "date": "2025-04-15",
+      "session_id": "d1790409-63de-4fa0-9446-6bb1309738de",
+      "endpoint": "/detect",
+      "pieces_detected": [
+        "黑象(Black Bishop):2",
+        "黑王(Black King):1",
+        "黑马(Black Knight):2",
+        "黑兵(Black Pawn):8",
+        "黑后(Black Queen):1",
+        "黑车(Black Rook):2",
+        "白象(White Bishop):2",
+        "白王(White King):1",
+        "白马(White Knight):2",
+        "白兵(White Pawn):9",
+        "白后(White Queen):1",
+        "白车(White Rook):2"
+      ]
+    },
+    {
+      "timestamp": "2025-04-15T21:47:20.357529",
+      "date": "2025-04-15",
+      "session_id": "d1790409-63de-4fa0-9446-6bb1309738de",
+      "endpoint": "/generate_notation",
+      "locations": [
+        "a8:黑车(Black Rook)",
+        "h8:黑车(Black Rook)",
+        "h7:黑兵(Black Pawn)",
+        "c6:黑马(Black Knight)",
+        "f6:黑马(Black Knight)",
+        "h1:白车(White Rook)",
+        "e4:白兵(White Pawn)",
+        "c8:黑象(Black Bishop)",
+        "b7:黑兵(Black Pawn)",
+        "g2:白兵(White Pawn)",
+        "e8:黑王(Black King)",
+        "c5:黑象(Black Bishop)",
+        "f1:白象(White Bishop)",
+        "c2:白兵(White Pawn)",
+        "a7:黑兵(Black Pawn)",
+        "f7:黑兵(Black Pawn)",
+        "h2:白兵(White Pawn)",
+        "d1:白后(White Queen)",
+        "f5:白象(White Bishop)",
+        "b2:白兵(White Pawn)",
+        "f2:白兵(White Pawn)",
+        "b1:白马(White Knight)",
+        "c7:黑兵(Black Pawn)",
+        "d7:黑兵(Black Pawn)",
+        "e5:黑兵(Black Pawn)",
+        "a2:白兵(White Pawn)",
+        "d8:黑后(Black Queen)",
+        "d3:白兵(White Pawn)",
+        "g7:黑兵(Black Pawn)",
+        "a1:白车(White Rook)",
+        "f3:白马(White Knight)",
+        "e1:白王(White King)",
+        "e3:白兵(White Pawn)"
       ]
     }
   ],

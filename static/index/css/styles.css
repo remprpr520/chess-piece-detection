@@ -110,7 +110,16 @@ h1::after {
     transform: none;
     box-shadow: none;
 }
+.btn-group-lg a.btn {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
 
+/* 确保悬停状态也保持一致 */
+.btn-group-lg a.btn:hover {
+    text-decoration: none;
+}
 .btn-group-lg {
     display: flex;
     gap: 10px;
